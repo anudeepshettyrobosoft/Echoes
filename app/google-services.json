@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "447545773135",
+    "project_id": "echoes-bb05f",
+    "storage_bucket": "echoes-bb05f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:447545773135:android:13310d607e332a7dd7ae3a",
+        "android_client_info": {
+          "package_name": "com.example.echoes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhL4oDa6TxpjYBPUxyZogsASl1TZCEns0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
