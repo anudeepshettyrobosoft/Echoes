@@ -1,10 +1,8 @@
 package com.example.echoes.mock
 
-import androidx.compose.material3.Badge
-import com.example.echoes.network.model.BadgeItem
-import com.example.echoes.network.model.NewsItem
-import com.example.echoes.network.model.NewsStatus
-import com.example.echoes.network.model.ProfileData
+import com.example.echoes.domain.model.BadgeItem
+import com.example.echoes.domain.model.NewsItem
+import com.example.echoes.domain.model.ProfileData
 
 val mockNewsList = listOf(
     NewsItem(

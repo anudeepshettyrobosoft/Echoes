@@ -1,9 +1,9 @@
 package com.example.echoes.di
 
-import com.example.echoes.network.NewsApiService
-import com.example.echoes.network.NewsRepository
-import com.example.echoes.network.NewsRepositoryImpl
-import com.example.echoes.ui.AppManager
+import com.example.echoes.data.network.NewsApiService
+import com.example.echoes.data.repository.NewsRepositoryImpl
+import com.example.echoes.domain.repository.NewsRepository
+import com.example.echoes.utils.AppManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
