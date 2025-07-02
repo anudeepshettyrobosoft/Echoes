@@ -3,12 +3,14 @@ package com.example.echoes.presentation.screens
 import android.content.Context
 import android.view.ViewGroup
 import android.webkit.WebView
+import androidx.annotation.RawRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +19,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +28,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
@@ -34,6 +40,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -57,6 +65,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.echoes.R
 import com.example.echoes.domain.model.BadgeItem
 import com.example.echoes.domain.model.NewsStatus
@@ -68,12 +80,12 @@ import com.example.echoes.utils.ImageUtils.getImageRequestWithHeaders
 @Composable
 fun ProfileSection(
     viewModel: EchoesViewModel,
-    context: Context
+    context: Context,
+    onLogout: () -> Unit = { /* Default no-op */ }
 ) {
     val profileData by viewModel.profileState.collectAsState()
     val newsData by viewModel.newsListState.collectAsState()
     var showHtmlDialog by remember { mutableStateOf(false) }
-    listOf("Published an article", "Earned a badge", "Commented on an article")
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -87,7 +99,9 @@ fun ProfileSection(
             verticalArrangement = Arrangement.spacedBy(16.dp),
 
             ) {
-            ProfileHeaderSection(context, profileData)
+            ProfileHeaderSection(context, profileData,onLogout)
+
+            RewardPointsBanner(profileData?.rewardPoints ?: "0")
 
 
             ProfileSummaryCard(
@@ -118,8 +132,105 @@ fun ProfileSection(
     }
 }
 
+@Composable
+fun ProfileSummaryCard(
+    badgesCount: Int = 0,
+    uploadedArticlesCount: Int = 0,
+    publishedArticlesCount: Int = 0
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Your Summary",
+                style = defaultTextStyle.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                ),
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                ProfileSummaryTile(
+                    icon = Icons.Default.Star,
+                    iconColor = Color(0xFFF4C430),
+                    label = "Badges",
+                    count = badgesCount
+                )
+                ProfileSummaryTile(
+                    icon = Icons.Default.List,
+                    iconColor = Color(0xFF4A90E2),
+                    label = "Uploaded",
+                    count = uploadedArticlesCount
+                )
+                ProfileSummaryTile(
+                    icon = Icons.Default.CheckCircle,
+                    iconColor = Color(0xFF27AE60),
+                    label = "Published",
+                    count = publishedArticlesCount
+                )
+            }
+        }
+    }
+}
 
 @Composable
+fun ProfileSummaryTile(
+    icon: ImageVector,
+    iconColor: Color,
+    label: String,
+    count: Int
+) {
+    Column(
+        modifier = Modifier.width(90.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .background(iconColor.copy(alpha = 0.15f), shape = CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = iconColor,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = count.toString(),
+            style = defaultTextStyle.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+        )
+        Text(
+            text = label,
+            style = defaultTextStyle.copy(
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+        )
+    }
+}
+
+
+
+
+/*@Composable
 fun ProfileSummaryCard(
     badgesCount: Int = 0,
     uploadedArticlesCount: Int = 0,
@@ -173,7 +284,7 @@ fun ProfileSummaryCard(
             )
         }
     }
-}
+}*/
 
 @Composable
 fun ProfileSummaryItem(
@@ -224,7 +335,15 @@ fun BadgeSection(badgeItems: List<BadgeItem>? = emptyList()) {
         )
 
         if (badgeItems?.isNotEmpty() == true) {
-            Row(
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(badgeItems ?: listOf()) { badge ->
+                    FullWidthBadgeCard(badge)
+                }
+            }
+            /*Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
@@ -234,7 +353,7 @@ fun BadgeSection(badgeItems: List<BadgeItem>? = emptyList()) {
                 badgeItems.forEach { badge ->
                     FullWidthBadgeCard(badge)
                 }
-            }
+            }*/
         } else {
             EmptyBadgePlaceholder()
         }
@@ -282,6 +401,60 @@ fun FullWidthBadgeCard(badge: BadgeItem) {
 
 @Composable
 fun EmptyBadgePlaceholder() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .height(200.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.code_F6F6F6))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // 👇 Add a Lottie animation if available
+            LottieAnimationView(
+                resId = R.raw.no_badges, // replace with your actual file
+                modifier = Modifier.size(80.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "No badges earned yet!",
+                style = defaultTextStyle.copy(fontSize = 16.sp, fontWeight = FontWeight.Medium)
+            )
+            Text(
+                text = "Upload articles, earn rewards, and get your first badge!",
+                style = defaultTextStyle.copy(fontSize = 12.sp, color = Color.Gray),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+fun LottieAnimationView(
+    @RawRes resId: Int,
+    modifier: Modifier = Modifier
+) {
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(resId))
+    LottieAnimation(
+        composition = composition,
+        iterations = LottieConstants.IterateForever,
+        modifier = modifier
+    )
+}
+
+
+
+/*@Composable
+fun EmptyBadgePlaceholder() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -294,7 +467,7 @@ fun EmptyBadgePlaceholder() {
             style = defaultTextStyle
         )
     }
-}
+}*/
 
 
 @Composable
@@ -303,32 +476,61 @@ fun LearnAboutRewards(onShowHtmlDialog: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.code_F6F6F6)),
-        elevation = CardDefaults.elevatedCardElevation()
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFAFAFA))
     ) {
-        Column(
+        Row(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Earn rewards by collecting badges!",
-                style = defaultTextStyle.copy(
-                    fontSize = 14.sp,
-                ),
+            Icon(
+                painter = painterResource(id = R.drawable.ic_gift),
+                contentDescription = null,
+                modifier = Modifier.size(48.dp),
+                tint = Color(0xFFFFA500)
             )
-            Text(
-                text = "Unlock exclusive perks by achieving milestones in your journey.",
-                style = defaultTextStyle
-            )
-            Button(
-                onClick = { onShowHtmlDialog() },
-                modifier = Modifier.align(Alignment.End),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text(text = "Learn More", color = Color.White)
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Earn Rewards!", fontWeight = FontWeight.Bold)
+                Text("Get vouchers by earning badges and uploading articles.")
+            }
+            TextButton(onClick = { onShowHtmlDialog() }) {
+                Text("Learn More")
             }
         }
     }
+
+    /* Card(
+         modifier = Modifier
+             .fillMaxWidth()
+             .padding(horizontal = 16.dp),
+         colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.code_F6F6F6)),
+         elevation = CardDefaults.elevatedCardElevation()
+     ) {
+         Column(
+             modifier = Modifier.padding(16.dp),
+             verticalArrangement = Arrangement.spacedBy(8.dp)
+         ) {
+             Text(
+                 text = "Earn rewards by collecting badges!",
+                 style = defaultTextStyle.copy(
+                     fontSize = 14.sp,
+                 ),
+             )
+             Text(
+                 text = "Unlock exclusive perks by achieving milestones in your journey.",
+                 style = defaultTextStyle
+             )
+             Button(
+                 onClick = { onShowHtmlDialog() },
+                 modifier = Modifier.align(Alignment.End),
+                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+             ) {
+                 Text(text = "Learn More", color = Color.White)
+             }
+         }
+     }*/
 }
 
 
@@ -386,9 +588,93 @@ fun HtmlDialog(htmlUrl: String, onDismiss: () -> Unit) {
     }
 }
 
+@Composable
+fun ProfileHeaderSection(
+    context: Context,
+    profileData: ProfileData?,
+    onLogout: () -> Unit
+) {
+    val profile = profileData ?: ProfileData()
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color(0xFF4A90E2), Color(0xFF6FB1FC))
+                )
+            )
+            .padding(bottom = 24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 48.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AsyncImage(
+                model = getImageRequestWithHeaders(context, profile.getImageUrl()),
+                contentDescription = "Profile",
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .border(3.dp, Color.White, CircleShape)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(profile.name, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text("Joined on ${profile.doj}", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
+        }
+
+        // 🔴 Logout Icon
+        Icon(
+            imageVector = Icons.Default.ExitToApp,
+            contentDescription = "Logout",
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+                .clickable { onLogout() },
+            tint = Color.White
+        )
+    }
+}
 
 @Composable
-fun ProfileHeaderSection(context: Context, profileData: ProfileData?) {
+fun RewardPointsBanner(points: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE6F0FF))
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_gift), // your gift icon
+                contentDescription = null,
+                tint = Color(0xFF4A90E2),
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text("Your Reward Points", fontWeight = FontWeight.Medium)
+                Text("$points pts", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+
+
+
+/*
+@Composable
+fun ProfileHeaderSection(context: Context, profileData: ProfileData?,onLogout: () -> Unit) {
     var profile = profileData
     if (profile == null) {
         profile = ProfileData()
@@ -399,13 +685,28 @@ fun ProfileHeaderSection(context: Context, profileData: ProfileData?) {
             .padding(top = 18.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        //Logout icon
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Icon(
+                imageVector = Icons.Default.ExitToApp,
+                contentDescription = "Logout",
+                modifier = Modifier
+                    .clickable { onLogout() }
+                    .padding(8.dp)
+            )
+        }
         AsyncImage(
             model = getImageRequestWithHeaders(context, profile.getImageUrl()),
             contentDescription = "Profile Picture",
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
-                .border(2.dp, colorResource(id = R.color.code_B4B4B4), CircleShape),
+                .border(2.dp, colorResource(id = R.color.code_C8DDF6), CircleShape),
             contentScale = ContentScale.Crop
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -417,4 +718,4 @@ fun ProfileHeaderSection(context: Context, profileData: ProfileData?) {
             color = colorResource(id = R.color.code_9)
         )
     }
-}
+}*/

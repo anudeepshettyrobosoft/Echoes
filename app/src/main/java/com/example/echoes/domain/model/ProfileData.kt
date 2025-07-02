@@ -8,6 +8,7 @@ data class ProfileData(
     val email: String = "",
     val phone: String = "",
     val doj: String = "",
+    val rewardPoints: String? = "250",
     val badges: List<BadgeItem>? = null
 ) {
     fun getImageUrl(): String {

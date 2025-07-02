@@ -10,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.example.echoes.presentation.screens.AppEntryPoint
 import com.example.echoes.presentation.screens.MainScreen
 import com.example.echoes.presentation.theme.EchoesTheme
 import com.example.echoes.presentation.utils.SnackbarManager
@@ -31,7 +32,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier
                         .fillMaxSize()
                 ) { innerPadding ->
-                    MainScreen(
+                    AppEntryPoint(
                         context = LocalContext.current,
                         viewModel = viewModel,
                         modifier = Modifier.padding(innerPadding)

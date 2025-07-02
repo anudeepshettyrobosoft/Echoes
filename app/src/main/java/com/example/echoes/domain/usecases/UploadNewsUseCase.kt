@@ -12,7 +12,7 @@ class UploadNewsUseCase @Inject constructor(
     private val contentResolver: ContentResolver,
     private val application: Application,
 ) {
-    suspend operator fun invoke(newsRequest: UploadNewsRequest): Result<UploadNewsResponse> {
-        return repository.uploadNews(newsRequest, contentResolver, application.applicationContext)
+    suspend operator fun invoke(userId:String,newsRequest: UploadNewsRequest): Result<UploadNewsResponse> {
+        return repository.uploadNews(userId,newsRequest, contentResolver, application.applicationContext)
     }
 }

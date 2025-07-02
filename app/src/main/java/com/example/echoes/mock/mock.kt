@@ -3,6 +3,7 @@ package com.example.echoes.mock
 import com.example.echoes.domain.model.BadgeItem
 import com.example.echoes.domain.model.NewsItem
 import com.example.echoes.domain.model.ProfileData
+import com.example.echoes.domain.model.Voucher
 
 val mockNewsList = listOf(
     NewsItem(
@@ -80,5 +81,56 @@ val mockProfileData = ProfileData(
             count = 1,
         )
 
+    )
+)
+
+val mockVouchers = listOf(
+    Voucher(
+        id = "1",
+        title = "Amazon ₹100 Voucher",
+        description = "₹100 off on ₹500",
+        pointsRequired = 100,
+        type = "Amazon",
+        code = "ECHOES-1001-XYZ"
+    ),
+    Voucher(
+        id = "2",
+        title = "Flipkart ₹200 Voucher",
+        description = "₹200 off on ₹1000",
+        pointsRequired = 200,
+        type = "Flipkart",
+        code = "ECHOES-1002-XYZ"
+    ),
+    Voucher(
+        id = "3",
+        title = "Uber ₹50 Discount",
+        description = "₹50 off on next ride",
+        pointsRequired = 50,
+        type = "Uber",
+        code = "ECHOES-1003-XYZ"
+    ),
+    Voucher(
+        id = "4",
+        title = "Myntra ₹100 Voucher",
+        description = "₹100 off on ₹500",
+        pointsRequired = 100,
+        type = "Myntra",
+        code = "ECHOES-1004-XYZ"
+    ),
+    Voucher(
+        id = "5",
+        title = "Ola ₹20 Voucher",
+        description = "₹200 off on ₹1000",
+        pointsRequired = 20,
+        type = "Ola",
+        code = "ECHOES-1005-XYZ"
+    ),
+    Voucher(
+        id = "6",
+        title = "Zepto ₹150 Discount",
+        description = "₹50 off on next ride",
+        pointsRequired = 150,
+        type = "Zepto",
+        code = "ECHOES-1006-XYZ"
     )
 )

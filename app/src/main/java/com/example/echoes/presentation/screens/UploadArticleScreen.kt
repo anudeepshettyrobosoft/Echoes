@@ -403,8 +403,8 @@ fun UploadArticle(
             shape = RoundedCornerShape(30.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = when (isButtonEnabled) {
-                    true -> colorResource(id = R.color.code_7C4DFF)
-                    else -> colorResource(id = R.color.code_B69BFF)
+                    true -> colorResource(id = R.color.code_4a90E2)
+                    else -> colorResource(id = R.color.code_C8DDF6)
                 }
             ),
         ) {

@@ -92,6 +92,9 @@ dependencies {
     // Optional: Add Play Services Auth for safety-net reCAPTCHA and other verification utilities
     implementation ("com.google.android.gms:play-services-auth:20.7.0")
 
+    implementation("com.airbnb.android:lottie-compose:6.0.0")
+
+
 
 
 

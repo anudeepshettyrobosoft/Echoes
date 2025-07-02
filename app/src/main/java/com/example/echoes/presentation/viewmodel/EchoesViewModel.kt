@@ -1,22 +1,34 @@
 package com.example.echoes.presentation.viewmodel
 
+import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.echoes.data.model.LoginRequest
+import com.example.echoes.data.model.RegisterUserRequest
 import com.example.echoes.domain.model.NewsItem
 import com.example.echoes.domain.model.ProfileData
 import com.example.echoes.data.model.UploadNewsRequest
 import com.example.echoes.data.model.UploadNewsResponse
+import com.example.echoes.domain.model.Voucher
 import com.example.echoes.domain.usecases.GetNewsListUseCase
 import com.example.echoes.domain.usecases.GetProfileDataUseCase
+import com.example.echoes.domain.usecases.LoginUseCase
+import com.example.echoes.domain.usecases.LogoutUseCase
+import com.example.echoes.domain.usecases.RegisterUserUseCase
 import com.example.echoes.domain.usecases.UploadNewsUseCase
+import com.example.echoes.mock.mockVouchers
 import com.example.echoes.presentation.utils.SnackbarManager
+import com.example.echoes.utils.UserPrefManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,7 +36,9 @@ class EchoesViewModel @Inject constructor(
     private val uploadNewsUseCase: UploadNewsUseCase,
     private val getNewsListUseCase: GetNewsListUseCase,
     private val getProfileDataUseCase: GetProfileDataUseCase,
-    private val contentResolver: android.content.ContentResolver
+    private val registerUserUseCase: RegisterUserUseCase,
+    private val loginUseCase: LoginUseCase,
+    private val logoutUseCase: LogoutUseCase
 ) : ViewModel() {
     private val _uploadState = MutableStateFlow<UploadState>(UploadState.Idle)
     val uploadState: StateFlow<UploadState> get() = _uploadState
@@ -41,25 +55,42 @@ class EchoesViewModel @Inject constructor(
     private val _selectedImages = MutableStateFlow<List<Uri>>(emptyList())
     val selectedImages: StateFlow<List<Uri>> get() = _selectedImages
 
-    init {
+    private val _rewardPoints = MutableStateFlow(0)
+    val rewardPoints: StateFlow<Int> get() = _rewardPoints
+
+    private val _vouchers = MutableStateFlow(mockVouchers)
+    val vouchers: StateFlow<List<Voucher>> get() = _vouchers
+
+    private val _redeemedVouchers = MutableStateFlow<Set<String>>(emptySet())
+    val redeemedVouchers = _redeemedVouchers.asStateFlow()
+
+
+    var isLoading = mutableStateOf(false)
+        private set
+
+    var userId = mutableStateOf<String?>(null)
+        private set
+
+    /*init {
         fetchNewsList()
         fetchProfileData()
-    }
+    }*/
 
 
 
     fun uploadNews(newsRequest: UploadNewsRequest) {
-        Log.d(TAG, "${newsRequest.title}, ${newsRequest.category}, ${newsRequest.description}")
         viewModelScope.launch {
             _uploadState.value = UploadState.Loading
-            val result = uploadNewsUseCase(newsRequest.copy(
+            val result = uploadNewsUseCase(
+                userId = userId.value?:"",
+                newsRequest.copy(
                 imageList = _selectedImages.value.ifEmpty { null }
             ))
 
             result.onSuccess { response ->
                 Log.d(TAG, "Upload success")
                 _shouldShowSuccessPopup.value = true
-                fetchNewsList()
+                userId.value?.let { fetchNewsList(userId = it) }
                 _uploadState.value = UploadState.Success(response)
             }.onFailure { exception ->
                 Log.e(TAG, "Upload failed with exception", exception)
@@ -70,9 +101,9 @@ class EchoesViewModel @Inject constructor(
         }
     }
 
-    private fun fetchNewsList() {
+    fun fetchNewsList(userId:String) {
         viewModelScope.launch {
-            val result = getNewsListUseCase()
+            val result = getNewsListUseCase.invoke(userId)
             if (result.isSuccess) {
                 _newsListState.value = result.getOrThrow()
             } else {
@@ -81,33 +112,85 @@ class EchoesViewModel @Inject constructor(
         }
     }
 
-    private fun fetchProfileData() {
+    fun fetchProfileData(onSuccess: (ProfileData) -> Unit = {}) {
         viewModelScope.launch {
             val result = getProfileDataUseCase()
             if (result.isSuccess) {
-                _profileState.value = result.getOrThrow()
+                val profileResponse = result.getOrThrow()
+                _profileState.value = profileResponse
+                onSuccess(profileResponse)
             } else {
                 Log.e(TAG, "Error fetching profile: ${result.exceptionOrNull()?.message}")
-               // SnackbarManager.showSnackbar("Failed to fetch profile data")
             }
         }
     }
 
-    private fun uriToPath(uri: Uri): String {
-        val projection = arrayOf(MediaStore.Images.Media.DATA)
-        contentResolver.query(uri, projection, null, null, null).use { cursor ->
-            if (cursor != null && cursor.moveToFirst()) {
-                val columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-                return cursor.getString(columnIndex)
+    fun registerUser(name: String, email: String, phone: String, onResult: (Boolean) -> Unit) {
+        setLoadingState(true)
+        viewModelScope.launch {
+            val result = registerUserUseCase(
+                RegisterUserRequest(
+                    name = name,
+                    email = email,
+                    phone = phone
+                )
+            )
+
+            result.onSuccess {
+                setLoadingState(false)
+                Log.d(TAG, "Registration success")
+                onResult(true)
+            }.onFailure { exception ->
+                setLoadingState(false)
+                Log.e(TAG, "Registration failed with exception", exception)
+                val errorMessage = exception.message ?: "Something went wrong"
+                SnackbarManager.showSnackbar(errorMessage)
             }
         }
-        throw IllegalArgumentException("Unable to get the file path from URI")
     }
 
+    fun loginUser(context: Context, email: String, password: String, onResult: (Boolean) -> Unit) {
+        setLoadingState(true)
+        viewModelScope.launch {
+            val result = loginUseCase(
+                LoginRequest(
+                    email = email,
+                    password = password
+                )
+            )
 
-    fun showSuccessPopup(){
-        _shouldShowSuccessPopup.value = true
+            result.onSuccess {loginResponse->
+                setLoadingState(false)
+                if(loginResponse.token.isNotEmpty()){
+                    Log.d(TAG, "Token: ${loginResponse.token}")
+                    UserPrefManager.saveAuthToken(context, loginResponse.token)
+                }
+                Log.d(TAG, "Login success")
+                onResult(true)
+            }.onFailure { exception ->
+                setLoadingState(false)
+                Log.e(TAG, "Login failed with exception", exception)
+                val errorMessage = exception.message ?: "Something went wrong"
+                SnackbarManager.showSnackbar("Login failed")
+            }
+        }
     }
+
+    fun logoutUser(onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = logoutUseCase()
+            if (result.isSuccess) {
+                Log.d(TAG, "Logout success")
+                onResult(true)
+            } else {
+                Log.e(TAG, "Logout failed with exception", result.exceptionOrNull())
+                val errorMessage = result.exceptionOrNull()?.message ?: "Something went wrong"
+                SnackbarManager.showSnackbar("errorMessage")
+                onResult(false)
+            }
+        }
+    }
+
 
     fun hideSuccessPopup(){
         _shouldShowSuccessPopup.value = false
@@ -121,9 +204,21 @@ class EchoesViewModel @Inject constructor(
         _selectedImages.value -= uri
     }
 
-    // Clear all selected images
-    fun clearImages() {
-        _selectedImages.value = emptyList()
+    fun setRewardPoints(points: Int?) {
+        points?.let {
+            _rewardPoints.value = points
+        }
+
+    }
+
+    fun markVoucherRedeemed(voucherId: String) {
+        _redeemedVouchers.value = _redeemedVouchers.value + voucherId
+    }
+
+
+
+    fun setLoadingState(isLoading: Boolean) {
+        this.isLoading.value = isLoading
     }
 
     sealed class UploadState {
@@ -136,20 +231,5 @@ class EchoesViewModel @Inject constructor(
     companion object{
         const val TAG = "NewsApp"
 
-     val categories = listOf(
-            "World",
-            "Politics",
-            "Business/Finance",
-            "Sports",
-            "Crime",
-            "Weather",
-            "Health",
-            "Technology",
-            "Real Estate",
-            "Events",
-            "Law",
-            "Entertainment",
-            "Local"
-        )
     }
 }

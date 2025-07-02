@@ -39,21 +39,28 @@ import com.example.echoes.presentation.viewmodel.EchoesViewModel
 import com.example.echoes.utils.LoadingIndicator
 
 @Composable
-fun LoginScreen(
+fun RegistrationScreen(
     viewModel: EchoesViewModel,
-    onLoginClick: (String, String) -> Unit,
-    onNavigateToRegister: () -> Unit
+    onRegisterClick: (String, String, String) -> Unit,
+    onNavigateToLogin: () -> Unit
 ) {
+    val isLoading by viewModel.isLoading
+
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+
+    var nameInteracted by remember { mutableStateOf(false) }
     var emailInteracted by remember { mutableStateOf(false) }
-    var passwordInteracted by remember { mutableStateOf(false) }
+    var phoneInteracted by remember { mutableStateOf(false) }
 
     val isButtonEnabled by remember {
-        derivedStateOf { isValidEmail(email) && password.isNotEmpty() }
+        derivedStateOf {
+            name.isNotBlank() &&
+                    isValidEmail(email) &&
+                    isValidPhone(phone)
+        }
     }
-
-    val isLoading by viewModel.isLoading
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Top Gradient Background
@@ -69,6 +76,7 @@ fun LoginScreen(
                     )
                 )
         )
+
         // Content
         Column(
             modifier = Modifier
@@ -93,9 +101,9 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Login Text
+            // Registration Text
             Text(
-                text = "Login",
+                text = "Register",
                 style = defaultTextStyle.copy(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 24.sp,
@@ -105,12 +113,27 @@ fun LoginScreen(
                // color = Color.Black
             )
 
+            // Name Input
+            CustomOutlinedTextField(
+                value = name,
+                onValueChange = {
+                    name = it
+                    nameInteracted = true // Mark as interacted when name changes
+                },
+                label = "Name",
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                isError = nameInteracted && name.isEmpty(),
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Email Input
             CustomOutlinedTextField(
                 value = email,
                 onValueChange = {
                     email = it
-                    emailInteracted = true
+                    emailInteracted = true // Mark as interacted when email changes
                 },
                 label = "Email",
                 modifier = Modifier.fillMaxWidth(),
@@ -118,52 +141,79 @@ fun LoginScreen(
                 isError = emailInteracted && !isValidEmail(email),
                 keyboardType = KeyboardType.Email,
             )
+            if (!isValidEmail(email) && email.isNotEmpty()) {
+                Text(
+                    text = "Invalid email address",
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Password Input
+            // Phone Input
             CustomOutlinedTextField(
-                value = password,
+                value = phone,
                 onValueChange = {
-                    password = it
-                    passwordInteracted = true
+                    phone = it
+                    phoneInteracted = true // Mark as interacted when phone changes
                 },
-                label = "Password",
+                label = "Phone",
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                isError = passwordInteracted && password.isEmpty(),
-                keyboardType = KeyboardType.Password,
+                isError = phoneInteracted && !isValidPhone(phone),
+                keyboardType = KeyboardType.Phone,
             )
+            if (!isValidPhone(phone) && phone.isNotEmpty()) {
+                Text(
+                    text = "Invalid phone number",
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Login Button
+            // Register Button
             Button(
-                onClick = { onLoginClick(email, password) },
+                onClick = { onRegisterClick(name, email, phone) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = when (isButtonEnabled) {
                         true -> colorResource(id = R.color.code_4a90E2)
                         else -> colorResource(id = R.color.code_C8DDF6)
                     }
-                )
+                ),
             ) {
-                Text("Login")
+                Text("Register")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Navigate to Register Button
+            // Navigate to Login Button
             TextButton(
-                onClick = { onNavigateToRegister()},
+                onClick = { onNavigateToLogin() },
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = colorResource(id = R.color.code_666666)
-            )) {
-                Text(text = "Don't have an account? Register here.",
-                    style = defaultTextStyle)
+                )
+            ) {
+                Text(text = "Already have an account? Login here.", style = defaultTextStyle)
             }
         }
 
         LoadingIndicator(isLoading = isLoading)
     }
 }
+
+
+fun isValidEmail(email: String): Boolean {
+    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+}
+
+fun isValidPhone(phone: String): Boolean {
+    return phone.length == 10 && phone.all { it.isDigit() }
+}
+
+

@@ -1,5 +1,7 @@
 package com.example.echoes.di
 
+import android.content.Context
+import com.example.echoes.data.network.AuthInterceptor
 import com.example.echoes.data.network.NewsApiService
 import com.example.echoes.data.repository.NewsRepositoryImpl
 import com.example.echoes.domain.repository.NewsRepository
@@ -7,6 +9,7 @@ import com.example.echoes.utils.AppManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -20,12 +23,13 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(@ApplicationContext context: Context): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY // Logs request/response bodies
         }
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
+            .addInterceptor(AuthInterceptor(context))
             .build()
     }
 

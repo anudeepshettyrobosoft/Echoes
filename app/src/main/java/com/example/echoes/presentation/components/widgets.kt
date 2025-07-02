@@ -19,8 +19,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,6 +48,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -64,7 +68,7 @@ import com.example.echoes.presentation.navigation.Screen
 
 @Composable
 fun BottomBar(
-    currentScreen: String,
+    currentScreen: Screen,
     onItemSelected: (Screen) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
@@ -75,26 +79,38 @@ fun BottomBar(
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
         ) {
-            val screens = listOf(Screen.UploadedArticles, Screen.Upload, Screen.Profile)
+            val screens =  listOf(
+            Screen.WithVector("uploaded_articles", "Articles", Icons.Default.List),
+            Screen.WithVector("upload", "Upload", Icons.Default.AddCircle),
+            Screen.WithDrawable("rewards", "Rewards", R.drawable.ic_gift),
+            Screen.WithVector("profile", "Profile", Icons.Default.Face)
+            )
 
             screens.forEach { screen ->
                 NavigationBarItem(
-                    selected = currentScreen == screen.route,
+                    selected = currentScreen == screen,
                     onClick = { onItemSelected(screen) },
                     colors = NavigationBarItemDefaults.colors(
                         indicatorColor = colorResource(id = R.color.code_F6F6F6)// Removes the oval background
                     ),
                     icon = {
-                        Icon(
-                            imageVector = screen.icon,
-                            contentDescription = screen.label,
-                            tint = if (currentScreen == screen.route) Color.Black else Color.Gray
-                        )
+                        when (screen) {
+                            is Screen.WithVector -> Icon(
+                                imageVector = screen.icon,
+                                contentDescription = screen.label,
+                                tint = if (currentScreen == screen) Color.Black else Color.Gray
+                            )
+                            is Screen.WithDrawable -> Icon(
+                                painter = painterResource(id = screen.icon),
+                                contentDescription = screen.label,
+                                tint = if (currentScreen == screen) Color.Black else Color.Gray
+                            )
+                        }
                     },
                     label = {
                         Text(
                             text = screen.label,
-                            color = if (currentScreen == screen.route) Color.Black else Color.Gray
+                            color = if (currentScreen == screen) Color.Black else Color.Gray
                         )
                     }
                 )
@@ -109,6 +125,7 @@ fun CustomOutlinedTextField(
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
+    isError: Boolean?= false,
     keyboardType: KeyboardType = KeyboardType.Text,
     imeActions: ImeAction = ImeAction.Done,
     leadingIcon: @Composable (() -> Unit)? = null,
@@ -124,6 +141,7 @@ fun CustomOutlinedTextField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
+        isError = isError ?: false,
         placeholder = {
             Text(
                 text = label,
@@ -265,7 +283,7 @@ fun <T> DropDownView(
                     onOptionSelected(option)
                     expanded = false
                 }, modifier = Modifier.background(
-                    if (isSelected) colorResource(id = R.color.code_7C4DFF) else Color.Transparent
+                    if (isSelected) colorResource(id = R.color.code_4a90E2) else Color.Transparent
                 )
                 )
             }

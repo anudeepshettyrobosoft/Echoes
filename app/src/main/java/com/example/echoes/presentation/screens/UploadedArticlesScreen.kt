@@ -42,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -61,6 +62,178 @@ import com.example.echoes.presentation.components.defaultTextStyle
 import com.example.echoes.presentation.utils.state.ImageLoadingState
 import com.example.echoes.presentation.viewmodel.EchoesViewModel
 import com.example.echoes.utils.ImageUtils.getImageRequestWithHeaders
+
+/*@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UploadedArticlesScreen(
+    context: Context,
+    viewModel: EchoesViewModel,
+    onArticleClick: (NewsItem) -> Unit
+) {
+    val uploadedNews by viewModel.newsListState.collectAsState()
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedFilter by remember { mutableStateOf("All") }
+
+    val filteredNews = uploadedNews.filter {
+        val formattedStatus = it.status.lowercase().replaceFirstChar { char -> char.uppercase() }
+        (searchQuery.isEmpty() ||
+                it.title.contains(searchQuery, ignoreCase = true) ||
+                formattedStatus.contains(searchQuery, ignoreCase = true)) &&
+                (selectedFilter == "All" || formattedStatus == selectedFilter)
+    }
+
+    Scaffold(
+        topBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color(0xFF4A90E2), Color(0xFF70B2EE))
+                        )
+                    )
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Your Articles",
+                    style = defaultTextStyle.copy(
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Start
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                if (uploadedNews.isEmpty().not())
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = {
+                            Text("Search articles...", color = Color.White)
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Search,
+                                tint = Color.White,
+                                contentDescription = null
+                            )
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White
+                        )
+                    )
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .background(Color.White)
+                .fillMaxSize()
+        ) {
+
+            if (uploadedNews.isEmpty().not())
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val filters = listOf("All") + NewsStatus.entries.map { it.statusName }
+                    filters.forEach { filter ->
+                        FilterChip(
+                            selected = selectedFilter == filter,
+                            onClick = { selectedFilter = filter },
+                            label = { Text(filter) },
+                            leadingIcon = if (selectedFilter == filter) {
+                                { Icon(Icons.Default.Check, contentDescription = null) }
+                            } else null
+                        )
+                    }
+                }
+
+            if (filteredNews.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    LottieAnimationView(
+                        resId = R.raw.no_articles,
+                        modifier = Modifier.size(200.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("No articles found", style = defaultTextStyle.copy(fontSize = 18.sp))
+                }
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(filteredNews) { newsItem ->
+                        NewsCard(context, newsItem)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun NewsCard(context: Context, newsItem: NewsItem) {
+    val statusColor = when (newsItem.status.lowercase()) {
+        "published" -> Color(0xFF4CAF50)
+        "rejected" -> Color(0xFFF44336)
+        else -> Color(0xFFFFC107)
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+    ) {
+        Row(modifier = Modifier.padding(16.dp)) {
+            AsyncImage(
+                model = getImageRequestWithHeaders(context, newsItem.imageORVideoUrl ?: ""),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(newsItem.title, fontWeight = FontWeight.SemiBold, maxLines = 1)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(newsItem.description, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(statusColor, RoundedCornerShape(4.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(newsItem.status, color = Color.White, fontSize = 12.sp)
+                    }
+                    newsItem.submittedDate?.let {
+                        Text(
+                            text = it,
+                            style = defaultTextStyle.copy(fontSize = 10.sp, color = Color.Gray)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}*/
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -168,7 +341,7 @@ fun UploadedArticlesScreen(
             // Grid View
             if (filteredNews.isEmpty()) {
                 EmptyState(
-                    onRetry = { /* Retry fetching news if needed */ }
+                    onRetry = {   }
                 )
             } else {
                 LazyColumn(
@@ -223,7 +396,7 @@ fun NewsSummaryRow(context: Context, newsItem: NewsItem) {
                     contentDescription = "News Picture",
                     modifier = Modifier
                         .fillMaxSize()
-                        .onGloballyPositioned { /* Track dimensions if needed */ },
+                        .onGloballyPositioned {   },
                     contentScale = ContentScale.Crop,
                     onState = { state ->
                         imageState = when (state) {
@@ -237,7 +410,7 @@ fun NewsSummaryRow(context: Context, newsItem: NewsItem) {
                 when (imageState) {
                     ImageLoadingState.LOADING -> {
                         CircularProgressIndicator(
-                            color = colorResource(id = R.color.code_B4B4B4),
+                            color = colorResource(id = R.color.code_C8DDF6),
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -246,7 +419,7 @@ fun NewsSummaryRow(context: Context, newsItem: NewsItem) {
                         Icon(
                             imageVector = Icons.Default.Warning,
                             contentDescription = "Failed to Load Image",
-                            tint = colorResource(id = R.color.code_B4B4B4),
+                            tint = colorResource(id = R.color.code_C8DDF6),
                             modifier = Modifier.size(32.dp)
                         )
                     }
@@ -297,7 +470,7 @@ fun NewsSummaryRow(context: Context, newsItem: NewsItem) {
                             text = "Submitted on: ${newsItem.submittedDate}",
                             style = defaultTextStyle.copy(
                                 fontSize = 10.sp,
-                                color = colorResource(id = R.color.code_B4B4B4)
+                                color = colorResource(id = R.color.code_C8DDF6)
                             )
                         )
                     }
@@ -353,7 +526,7 @@ fun RejectedNewsSummaryRow(context: Context, newsItem: NewsItem) {
                 when (imageState) {
                     ImageLoadingState.LOADING -> {
                         CircularProgressIndicator(
-                            color = colorResource(id = R.color.code_B4B4B4),
+                            color = colorResource(id = R.color.code_C8DDF6),
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -362,7 +535,7 @@ fun RejectedNewsSummaryRow(context: Context, newsItem: NewsItem) {
                         Icon(
                             imageVector = Icons.Default.Warning,
                             contentDescription = "Failed to Load Image",
-                            tint = colorResource(id = R.color.code_B4B4B4),
+                            tint = colorResource(id = R.color.code_C8DDF6),
                             modifier = Modifier.size(32.dp)
                         )
                     }
@@ -417,7 +590,7 @@ fun RejectedNewsSummaryRow(context: Context, newsItem: NewsItem) {
                         text = "Submitted on: ${newsItem.submittedDate}",
                         style = defaultTextStyle.copy(
                             fontSize = 10.sp,
-                            color = colorResource(id = R.color.code_B4B4B4)
+                            color = colorResource(id = R.color.code_C8DDF6)
                         )
                     )
                 }

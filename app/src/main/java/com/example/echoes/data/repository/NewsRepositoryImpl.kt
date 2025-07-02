@@ -5,12 +5,18 @@ import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
+import com.example.echoes.data.model.LoginRequest
+import com.example.echoes.data.model.LoginResponse
+import com.example.echoes.data.model.LogoutResponse
+import com.example.echoes.data.model.RegisterUserRequest
+import com.example.echoes.data.model.RegisterUserResponse
 import com.example.echoes.data.model.UploadNewsRequest
 import com.example.echoes.data.model.UploadNewsResponse
 import com.example.echoes.data.network.NewsApiService
 import com.example.echoes.domain.model.NewsItem
 import com.example.echoes.domain.model.ProfileData
 import com.example.echoes.domain.repository.NewsRepository
+import com.example.echoes.mock.mockNewsList
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -23,6 +29,7 @@ class NewsRepositoryImpl @Inject constructor(
 ) : NewsRepository {
 
     override suspend fun uploadNews(
+        userId:String,
         newsRequest: UploadNewsRequest,
         contentResolver: ContentResolver,
         context: Context
@@ -58,6 +65,7 @@ class NewsRepositoryImpl @Inject constructor(
 
             // Make the API call
             val response = apiService.uploadNews(
+                userId,
                 title,
                 description,
                 category,
@@ -123,10 +131,10 @@ class NewsRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getNewsList(): Result<List<NewsItem>> {
+    override suspend fun getNewsList(userId: String): Result<List<NewsItem>> {
         //return Result.success(mockNewsList)
         return try {
-            val response = apiService.getNewsList()
+            val response = apiService.getNewsList(userId)
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
@@ -150,4 +158,60 @@ class NewsRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+    override suspend fun registerUser(registerUserRequest: RegisterUserRequest): Result<RegisterUserResponse> {
+        return try {
+            val name = registerUserRequest.name.toRequestBody("text/plain".toMediaTypeOrNull())
+            val email = registerUserRequest.email.toRequestBody("text/plain".toMediaTypeOrNull())
+            val phone = registerUserRequest.phone.toRequestBody("text/plain".toMediaTypeOrNull())
+            val type = registerUserRequest.type?.toRequestBody("text/plain".toMediaTypeOrNull())
+
+
+            // Make the API call
+            val response = apiService.registerUser(
+                name,
+                email,
+                phone,
+                type!!
+            )
+
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("API Error: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun login(loginRequest: LoginRequest): Result<LoginResponse> {
+        return try {
+            val response = apiService.login(loginRequest)
+
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("API Error: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun logout(): Result<LogoutResponse> {
+        return try {
+            val response = apiService.logout()
+
+            if (response.isSuccessful) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("API Error: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
 }
