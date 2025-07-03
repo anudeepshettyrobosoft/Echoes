@@ -56,7 +56,7 @@ fun EchoesTheme(
     }
 
     // Status bar color configuration
-    val statusBarColor = Color.White
+    val statusBarColor = LightColorScheme.primary
     val isLightStatusBar = !darkTheme
 
     // Apply status bar color and light/dark icons

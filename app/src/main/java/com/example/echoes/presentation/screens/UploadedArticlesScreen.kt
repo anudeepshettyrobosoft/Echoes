@@ -28,6 +28,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -63,7 +64,7 @@ import com.example.echoes.presentation.utils.state.ImageLoadingState
 import com.example.echoes.presentation.viewmodel.EchoesViewModel
 import com.example.echoes.utils.ImageUtils.getImageRequestWithHeaders
 
-/*@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadedArticlesScreen(
     context: Context,
@@ -101,7 +102,7 @@ fun UploadedArticlesScreen(
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White
                     ),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
                     textAlign = TextAlign.Start
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -148,9 +149,15 @@ fun UploadedArticlesScreen(
                         FilterChip(
                             selected = selectedFilter == filter,
                             onClick = { selectedFilter = filter },
-                            label = { Text(filter) },
+                            label = { Text(filter, style = defaultTextStyle.copy(color = if(selectedFilter == filter)Color.White else colorResource(
+                                id = R.color.code_1E1E1E
+                            ))) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = colorResource(id = R.color.code_4a90E2),
+                                disabledLabelColor = colorResource(id = R.color.code_4a90E2),
+                            ),
                             leadingIcon = if (selectedFilter == filter) {
-                                { Icon(Icons.Default.Check, contentDescription = null) }
+                                { Icon(Icons.Default.Check, tint = Color.White, contentDescription = null) }
                             } else null
                         )
                     }
@@ -188,12 +195,17 @@ fun NewsCard(context: Context, newsItem: NewsItem) {
         else -> Color(0xFFFFC107)
     }
 
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+            .padding(vertical = 8.dp, horizontal = 10.dp),
+        elevation = CardDefaults.elevatedCardElevation(),
+        border = BorderStroke(
+            width = 1.dp,
+            color = colorResource(id = R.color.code_E8E8E8)
+        ),
+        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.white))
     ) {
         Row(modifier = Modifier.padding(16.dp)) {
             AsyncImage(
@@ -201,42 +213,38 @@ fun NewsCard(context: Context, newsItem: NewsItem) {
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(64.dp)
+                    .size(80.dp)
                     .clip(RoundedCornerShape(8.dp))
             )
 
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(newsItem.title, fontWeight = FontWeight.SemiBold, maxLines = 1)
+                Text(newsItem.title, style = defaultTextStyle.copy(fontWeight = FontWeight.SemiBold, fontSize = 14.sp), maxLines = 1)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(newsItem.description, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(newsItem.description,style = defaultTextStyle, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 Spacer(modifier = Modifier.height(8.dp))
-                Row(
+                Row(Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .background(statusColor, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(newsItem.status, color = Color.White, fontSize = 12.sp)
-                    }
+                    Text(newsItem.status,  style = defaultTextStyle.copy(color = statusColor))
+
                     newsItem.submittedDate?.let {
                         Text(
                             text = it,
-                            style = defaultTextStyle.copy(fontSize = 10.sp, color = Color.Gray)
+                            style = defaultTextStyle.copy(fontSize = 10.sp, color = colorResource(id = R.color.code_1E1E1E))
                         )
                     }
+
                 }
             }
         }
     }
-}*/
+}
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+/*@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UploadedArticlesScreen(
     context: Context,
@@ -478,7 +486,7 @@ fun NewsSummaryRow(context: Context, newsItem: NewsItem) {
             }
         }
     }
-}
+}*/
 
 
 @Composable

@@ -8,8 +8,8 @@ data class Voucher(
     val description: String,
     val pointsRequired: Int,
     val type: String,
-    val code: String = "", // This can be shown after redemption,
-    var icon: Int = R.drawable.ic_gift // Icon can be set later, e.g., after fetching from server
+    val code: String = "",
+    var icon: Int = R.drawable.ic_gift
 ){
     fun getVendorIcon(): Int {
         return when (type) {

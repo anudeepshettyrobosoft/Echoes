@@ -16,8 +16,10 @@ import com.example.echoes.data.model.UploadNewsResponse
 import com.example.echoes.domain.model.Voucher
 import com.example.echoes.domain.usecases.GetNewsListUseCase
 import com.example.echoes.domain.usecases.GetProfileDataUseCase
+import com.example.echoes.domain.usecases.GetVouchersListUseCase
 import com.example.echoes.domain.usecases.LoginUseCase
 import com.example.echoes.domain.usecases.LogoutUseCase
+import com.example.echoes.domain.usecases.RedeemVoucherUseCase
 import com.example.echoes.domain.usecases.RegisterUserUseCase
 import com.example.echoes.domain.usecases.UploadNewsUseCase
 import com.example.echoes.mock.mockVouchers
@@ -38,7 +40,9 @@ class EchoesViewModel @Inject constructor(
     private val getProfileDataUseCase: GetProfileDataUseCase,
     private val registerUserUseCase: RegisterUserUseCase,
     private val loginUseCase: LoginUseCase,
-    private val logoutUseCase: LogoutUseCase
+    private val logoutUseCase: LogoutUseCase,
+    private val getVouchersListUseCase: GetVouchersListUseCase,
+    private val redeemVoucherUseCase: RedeemVoucherUseCase
 ) : ViewModel() {
     private val _uploadState = MutableStateFlow<UploadState>(UploadState.Idle)
     val uploadState: StateFlow<UploadState> get() = _uploadState
@@ -58,7 +62,7 @@ class EchoesViewModel @Inject constructor(
     private val _rewardPoints = MutableStateFlow(0)
     val rewardPoints: StateFlow<Int> get() = _rewardPoints
 
-    private val _vouchers = MutableStateFlow(mockVouchers)
+    private val _vouchers = MutableStateFlow<List<Voucher>>(emptyList())
     val vouchers: StateFlow<List<Voucher>> get() = _vouchers
 
     private val _redeemedVouchers = MutableStateFlow<Set<String>>(emptySet())
@@ -191,6 +195,35 @@ class EchoesViewModel @Inject constructor(
         }
     }
 
+    fun fetchVouchersList() {
+        viewModelScope.launch {
+            val result = getVouchersListUseCase.invoke()
+            if (result.isSuccess) {
+                _vouchers.value = result.getOrThrow()
+            } else {
+                Log.e(TAG, "Error fetching vouchers: ${result.exceptionOrNull()?.message}")
+            }
+        }
+    }
+
+    fun redeemVoucher(voucherId: String,onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = redeemVoucherUseCase(voucherId)
+            if (result.isSuccess) {
+                val redeemResponse = result.getOrThrow()
+                _rewardPoints.value = redeemResponse.message.toIntOrNull() ?: 0
+                markVoucherRedeemed(voucherId)
+                Log.d(TAG, "Redemption success")
+                onResult(true)
+            } else {
+                Log.e(TAG, "Redemption failed with exception", result.exceptionOrNull())
+                val errorMessage = result.exceptionOrNull()?.message ?: "Something went wrong"
+                SnackbarManager.showSnackbar("errorMessage")
+                onResult(false)
+            }
+        }
+    }
+
 
     fun hideSuccessPopup(){
         _shouldShowSuccessPopup.value = false
@@ -212,7 +245,7 @@ class EchoesViewModel @Inject constructor(
     }
 
     fun markVoucherRedeemed(voucherId: String) {
-        _redeemedVouchers.value = _redeemedVouchers.value + voucherId
+        _redeemedVouchers.value += voucherId
     }
 
 
@@ -226,6 +259,13 @@ class EchoesViewModel @Inject constructor(
         object Loading : UploadState()
         data class Success(val response: UploadNewsResponse) : UploadState()
         data class Error(val message: String) : UploadState()
+    }
+
+    sealed class FetchNewsState {
+        object Idle : FetchNewsState()
+        object Loading : FetchNewsState()
+        data class Success(val response: List<NewsItem>) : FetchNewsState()
+        data class Error(val message: String) : FetchNewsState()
     }
 
     companion object{

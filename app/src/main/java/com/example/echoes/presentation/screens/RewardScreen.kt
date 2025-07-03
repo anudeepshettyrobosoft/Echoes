@@ -156,10 +156,15 @@ fun RewardsScreen(
 
                         Button(
                             onClick = {
-                                val updatedPoints = userPoints - voucher.pointsRequired
+                                viewModel.redeemVoucher(voucher.id){
+                                    if(it){
+                                        redeemedCode = voucher.code
+                                    }
+                                }
+                                /*val updatedPoints = userPoints - voucher.pointsRequired
                                 viewModel.setRewardPoints(updatedPoints)
                                 redeemedCode = "ECHOES-${voucher.id}-XYZ"
-                                viewModel.markVoucherRedeemed(voucher.id)
+                                viewModel.markVoucherRedeemed(voucher.id)*/
                             },
                             enabled = userPoints >= voucher.pointsRequired && !redeemedVouchers.contains(
                                 voucher.id

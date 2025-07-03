@@ -8,6 +8,7 @@ import com.example.echoes.data.model.RegisterUserResponse
 import com.example.echoes.data.model.UploadNewsResponse
 import com.example.echoes.domain.model.NewsItem
 import com.example.echoes.domain.model.ProfileData
+import com.example.echoes.domain.model.Voucher
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -58,5 +59,14 @@ interface NewsApiService {
     @POST("logout")
     suspend fun logout(
     ): Response<LogoutResponse>
+
+    @GET("voucher/list")
+    suspend fun getVouchers(
+    ): Response<List<Voucher>>
+
+    @GET("voucher/redeem/{voucherId}")
+    suspend fun redeemVoucher(
+        @Path("voucherId") voucherId: String
+    ): Response<GenericResponse>
 
 }

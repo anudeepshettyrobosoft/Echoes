@@ -25,21 +25,41 @@ fun AppEntryPoint(
 
     NavHost(
         navController = navController,
-        startDestination = when {
+        startDestination = "splash"/*when {
             isLoggedIn.value -> "main"
             isRegistered.value -> "login"
             else -> "register"
-        }
+        }*/
     ) {
+        // Splash Screen
+        composable("splash") {
+            EchoesSplashScreen(
+                onAnimationEnd = {
+                    val destination = when {
+                        isLoggedIn.value -> "main"
+                        isRegistered.value -> "login"
+                        else -> "register"
+                    }
+                    navController.navigate(destination) {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable("main") {
             MainScreen(
                 context = context,
                 viewModel = viewModel,
                 onLogout = {
-                    isLoggedIn.value = false
-                    UserPrefManager.clearUserData(context)
-                    navController.navigate("login") {
-                        popUpTo("main") { inclusive = true }
+                    viewModel.logoutUser {
+                        if (it) {
+                            isLoggedIn.value = false
+                            UserPrefManager.clearUserData(context)
+                            navController.navigate("login") {
+                                popUpTo("main") { inclusive = true }
+                            }
+                        }
                     }
                 }
             )

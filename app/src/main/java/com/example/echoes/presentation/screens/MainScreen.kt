@@ -31,13 +31,14 @@ fun MainScreen(
 
     // Fetch user profile and news list
     LaunchedEffect(Unit) {
-        viewModel.fetchNewsList("id")
+        //viewModel.fetchNewsList("id")
         viewModel.fetchProfileData { profile ->
             profile.id?.let { id ->
                 viewModel.userId.value = id
-                viewModel.setRewardPoints(profile.rewardPoints?.toInt())
+                viewModel.setRewardPoints(profile.rewardPoint?.toInt())
                 UserPrefManager.setUserId(context, id)
                 viewModel.fetchNewsList(id)
+                viewModel.fetchVouchersList()
             }
         }
     }

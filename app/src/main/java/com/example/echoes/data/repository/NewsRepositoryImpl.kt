@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
+import com.example.echoes.data.model.GenericResponse
 import com.example.echoes.data.model.LoginRequest
 import com.example.echoes.data.model.LoginResponse
 import com.example.echoes.data.model.LogoutResponse
@@ -15,6 +16,7 @@ import com.example.echoes.data.model.UploadNewsResponse
 import com.example.echoes.data.network.NewsApiService
 import com.example.echoes.domain.model.NewsItem
 import com.example.echoes.domain.model.ProfileData
+import com.example.echoes.domain.model.Voucher
 import com.example.echoes.domain.repository.NewsRepository
 import com.example.echoes.mock.mockNewsList
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -204,6 +206,34 @@ class NewsRepositoryImpl @Inject constructor(
             val response = apiService.logout()
 
             if (response.isSuccessful) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("API Error: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getVouchersList(): Result<List<Voucher>> {
+        //return Result.success(voucherList)
+        return try {
+            val response = apiService.getVouchers()
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception(response.message()))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun redeemVoucher(voucherId: String): Result<GenericResponse> {
+        return try {
+            val response = apiService.redeemVoucher(voucherId)
+
+            if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
                 Result.failure(Exception("API Error: ${response.message()}"))
