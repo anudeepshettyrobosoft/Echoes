@@ -64,7 +64,7 @@ fun EchoesTheme(
     LaunchedEffect(Unit) {
         activity?.window?.apply {
             this.statusBarColor = statusBarColor.toArgb()
-            WindowCompat.getInsetsController(this, decorView).isAppearanceLightStatusBars = true
+            WindowCompat.getInsetsController(this, decorView).isAppearanceLightStatusBars = false
         }
     }
 
