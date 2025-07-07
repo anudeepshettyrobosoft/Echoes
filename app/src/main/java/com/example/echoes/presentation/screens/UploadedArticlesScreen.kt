@@ -46,7 +46,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -102,7 +101,9 @@ fun UploadedArticlesScreen(
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White
                     ),
-                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp),
                     textAlign = TextAlign.Start
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -149,15 +150,27 @@ fun UploadedArticlesScreen(
                         FilterChip(
                             selected = selectedFilter == filter,
                             onClick = { selectedFilter = filter },
-                            label = { Text(filter, style = defaultTextStyle.copy(color = if(selectedFilter == filter)Color.White else colorResource(
-                                id = R.color.code_1E1E1E
-                            ))) },
+                            label = {
+                                Text(
+                                    filter, style = defaultTextStyle.copy(
+                                        color = if (selectedFilter == filter) Color.White else colorResource(
+                                            id = R.color.code_1E1E1E
+                                        )
+                                    )
+                                )
+                            },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = colorResource(id = R.color.code_4a90E2),
                                 disabledLabelColor = colorResource(id = R.color.code_4a90E2),
                             ),
                             leadingIcon = if (selectedFilter == filter) {
-                                { Icon(Icons.Default.Check, tint = Color.White, contentDescription = null) }
+                                {
+                                    Icon(
+                                        Icons.Default.Check,
+                                        tint = Color.White,
+                                        contentDescription = null
+                                    )
+                                }
                             } else null
                         )
                     }
@@ -220,416 +233,56 @@ fun NewsCard(context: Context, newsItem: NewsItem) {
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(newsItem.title, style = defaultTextStyle.copy(fontWeight = FontWeight.SemiBold, fontSize = 14.sp), maxLines = 1)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(newsItem.description,style = defaultTextStyle, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(newsItem.status,  style = defaultTextStyle.copy(color = statusColor))
-
-                    newsItem.submittedDate?.let {
-                        Text(
-                            text = it,
-                            style = defaultTextStyle.copy(fontSize = 10.sp, color = colorResource(id = R.color.code_1E1E1E))
-                        )
-                    }
-
-                }
-            }
-        }
-    }
-}
-
-
-/*@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun UploadedArticlesScreen(
-    context: Context,
-    viewModel: EchoesViewModel,
-    onArticleClick: (NewsItem) -> Unit
-) {
-    val uploadedNews by viewModel.newsListState.collectAsState()
-
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedFilter by remember { mutableStateOf("All") }
-
-    val filteredNews = uploadedNews.filter {
-        val formattedStatus = it.status.lowercase().replaceFirstChar { char -> char.uppercase() }
-        (searchQuery.isEmpty() ||
-                it.title.contains(searchQuery, ignoreCase = true) ||
-                formattedStatus.contains(searchQuery, ignoreCase = true)) &&
-                (selectedFilter == "All" || formattedStatus == selectedFilter)
-    }
-
-    Scaffold(
-        topBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(16.dp)
-            ) {
                 Text(
-                    text = "Articles",
+                    newsItem.title,
                     style = defaultTextStyle.copy(
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 6.dp),
-                    textAlign = TextAlign.Start
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Search Bar
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = {
-                        Text(
-                            text = "Search articles...", style = defaultTextStyle.copy(
-                                fontSize = 14.sp, color = colorResource(
-                                    id = R.color.code_9
-                                )
-                            )
-                        )
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorResource(id = R.color.code_9),
-                        unfocusedBorderColor = colorResource(id = R.color.code_9)
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Search,
-                            tint = colorResource(id = R.color.code_9),
-                            contentDescription = null
-                        )
-                    }
-                )
-            }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .background(Color.White)
-        ) {
-            // Filter Chips
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                val filters = mutableListOf("All")
-                filters.addAll(NewsStatus.entries.map { it.statusName })
-
-                //  val filters = listOf("All", "Submitted", "Pending","Published", "Rejected")
-                filters.forEach { filter ->
-                    FilterChip(
-                        selected = selectedFilter == filter,
-                        onClick = { selectedFilter = filter },
-                        label = { Text(filter) },
-                        leadingIcon = if (selectedFilter == filter) {
-                            { Icon(Icons.Default.Check, contentDescription = null) }
-                        } else null,
-                    )
-                }
-            }
-
-            // Grid View
-            if (filteredNews.isEmpty()) {
-                EmptyState(
-                    onRetry = {   }
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                ) {
-                    items(filteredNews) { newsItem -> // Use filteredNews here
-                        newsItem.status.let {
-                            if (it.equals(NewsStatus.REJECTED.statusName, ignoreCase = true)) {
-                                RejectedNewsSummaryRow(context, newsItem)
-                            } else {
-                                NewsSummaryRow(context, newsItem)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun NewsSummaryRow(context: Context, newsItem: NewsItem) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 10.dp),
-        elevation = CardDefaults.elevatedCardElevation(),
-        border = BorderStroke(
-            width = 1.dp,
-            color = colorResource(id = R.color.code_E8E8E8)
-        ),
-        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.white))
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Thumbnail Container
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(colorResource(id = R.color.code_E8E8E8)), // Placeholder background color
-                contentAlignment = Alignment.Center
-            ) {
-                var imageState by remember { mutableStateOf(ImageLoadingState.LOADING) }
-
-                AsyncImage(
-                    model = getImageRequestWithHeaders(context, newsItem.imageORVideoUrl ?: ""),
-                    contentDescription = "News Picture",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .onGloballyPositioned {   },
-                    contentScale = ContentScale.Crop,
-                    onState = { state ->
-                        imageState = when (state) {
-                            is AsyncImagePainter.State.Success -> ImageLoadingState.SUCCESS
-                            is AsyncImagePainter.State.Error -> ImageLoadingState.ERROR
-                            else -> ImageLoadingState.LOADING
-                        }
-                    }
-                )
-
-                when (imageState) {
-                    ImageLoadingState.LOADING -> {
-                        CircularProgressIndicator(
-                            color = colorResource(id = R.color.code_C8DDF6),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-
-                    ImageLoadingState.ERROR -> {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = "Failed to Load Image",
-                            tint = colorResource(id = R.color.code_C8DDF6),
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-
-                    ImageLoadingState.SUCCESS -> {
-                        // No overlay for successful image
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                // Title
-                Text(
-                    text = newsItem.title,
-                    style = defaultTextStyle.copy(
+                        fontWeight = FontWeight.SemiBold,
                         fontSize = 14.sp
                     ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    maxLines = 1
                 )
-
                 Spacer(modifier = Modifier.height(4.dp))
-
                 Text(
-                    text = newsItem.description,
+                    newsItem.description,
                     style = defaultTextStyle,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Row(
                     Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = newsItem.status,
-                        style = defaultTextStyle.copy(fontWeight = FontWeight.SemiBold),
-                        color = colorResource(id = R.color.code_1E1E1E)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(newsItem.status, style = defaultTextStyle.copy(color = statusColor))
+
                     newsItem.submittedDate?.let {
                         Text(
-                            text = "Submitted on: ${newsItem.submittedDate}",
+                            text = it,
                             style = defaultTextStyle.copy(
                                 fontSize = 10.sp,
-                                color = colorResource(id = R.color.code_C8DDF6)
+                                color = colorResource(id = R.color.code_1E1E1E)
                             )
                         )
                     }
+
                 }
-            }
-        }
-    }
-}*/
-
-
-@Composable
-fun RejectedNewsSummaryRow(context: Context, newsItem: NewsItem) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 10.dp),
-        elevation = CardDefaults.elevatedCardElevation(),
-        border = BorderStroke(
-            width = 1.dp,
-            color = colorResource(id = R.color.code_E8E8E8)
-        ),
-        colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.white))
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Thumbnail Container
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(colorResource(id = R.color.code_E8E8E8)), // Placeholder background color
-                contentAlignment = Alignment.Center
-            ) {
-                var imageState by remember { mutableStateOf(ImageLoadingState.LOADING) }
-
-                AsyncImage(
-                    model = newsItem.getImageUrl(),
-                    contentDescription = "Profile Picture",
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    onState = { state ->
-                        imageState = when (state) {
-                            is AsyncImagePainter.State.Success -> ImageLoadingState.SUCCESS
-                            is AsyncImagePainter.State.Error -> ImageLoadingState.ERROR
-                            else -> ImageLoadingState.LOADING
-                        }
-                    }
-                )
-
-                when (imageState) {
-                    ImageLoadingState.LOADING -> {
-                        CircularProgressIndicator(
-                            color = colorResource(id = R.color.code_C8DDF6),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-
-                    ImageLoadingState.ERROR -> {
-                        Icon(
-                            imageVector = Icons.Default.Warning,
-                            contentDescription = "Failed to Load Image",
-                            tint = colorResource(id = R.color.code_C8DDF6),
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-
-                    ImageLoadingState.SUCCESS -> {
-                        // No overlay for successful image
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                // Title
-                Text(
-                    text = newsItem.title,
-                    style = defaultTextStyle.copy(
-                        fontSize = 14.sp
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
-                    Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                if (newsItem.status.equals(NewsStatus.REJECTED.statusName, ignoreCase = true) &&
+                    newsItem.comments.isNullOrEmpty().not()
                 ) {
-                    Text(
-                        text = newsItem.status,
-                        style = defaultTextStyle.copy(fontWeight = FontWeight.SemiBold),
-                        color = colorResource(id = R.color.code_1E1E1E)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Reason:",
-                        style = defaultTextStyle.copy(color = colorResource(id = R.color.code_1E1E1E)),
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = newsItem.comments ?: "No comments",
-                        style = defaultTextStyle.copy(color = Color.Red),
-                    )
-                }
-
-                newsItem.submittedDate?.let {
-                    Text(
-                        text = "Submitted on: ${newsItem.submittedDate}",
-                        style = defaultTextStyle.copy(
-                            fontSize = 10.sp,
-                            color = colorResource(id = R.color.code_C8DDF6)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Reason:",
+                            style = defaultTextStyle.copy(color = colorResource(id = R.color.code_1E1E1E)),
                         )
-                    )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = newsItem.comments ?: "No comments",
+                            style = defaultTextStyle.copy(color = Color.Red),
+                        )
+                    }
                 }
             }
         }
-    }
-}
-
-
-@Composable
-fun EmptyState(onRetry: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_backup),
-            contentDescription = "No Articles",
-            modifier = Modifier.size(120.dp),
-            tint = colorResource(id = R.color.code_9)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "No articles uploaded yet!",
-            style = defaultTextStyle.copy(
-                fontSize = 18.sp,
-                color = colorResource(id = R.color.code_9)
-            ),
-        )
     }
 }

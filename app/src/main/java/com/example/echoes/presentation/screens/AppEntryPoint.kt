@@ -19,17 +19,12 @@ fun AppEntryPoint(
 ) {
     val navController = rememberNavController()
 
-    // State for login and registration
     val isLoggedIn = remember { mutableStateOf(UserPrefManager.isUserLoggedIn(context)) }
     val isRegistered = remember { mutableStateOf(UserPrefManager.isUserRegistered(context)) }
 
     NavHost(
         navController = navController,
-        startDestination = "splash"/*when {
-            isLoggedIn.value -> "main"
-            isRegistered.value -> "login"
-            else -> "register"
-        }*/
+        startDestination = "splash"
     ) {
         // Splash Screen
         composable("splash") {

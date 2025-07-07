@@ -63,7 +63,6 @@ fun RegistrationScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Top Gradient Background
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -77,7 +76,6 @@ fun RegistrationScreen(
                 )
         )
 
-        // Content
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -101,7 +99,6 @@ fun RegistrationScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Registration Text
             Text(
                 text = "Register",
                 style = defaultTextStyle.copy(
@@ -110,7 +107,6 @@ fun RegistrationScreen(
                     color = colorResource(id = R.color.code_666666)
                 ),
                 modifier = Modifier.padding(bottom = 24.dp),
-               // color = Color.Black
             )
 
             // Name Input
@@ -152,7 +148,6 @@ fun RegistrationScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Phone Input
             CustomOutlinedTextField(
                 value = phone,
                 onValueChange = {
@@ -176,7 +171,6 @@ fun RegistrationScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Register Button
             Button(
                 onClick = { onRegisterClick(name, email, phone) },
                 modifier = Modifier.fillMaxWidth(),
@@ -192,7 +186,6 @@ fun RegistrationScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Navigate to Login Button
             TextButton(
                 onClick = { onNavigateToLogin() },
                 colors = ButtonDefaults.textButtonColors(

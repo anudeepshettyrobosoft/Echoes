@@ -29,9 +29,7 @@ fun MainScreen(
     val navController = rememberNavController()
     val currentScreen = remember { mutableStateOf<Screen>(Screen.Upload) }
 
-    // Fetch user profile and news list
     LaunchedEffect(Unit) {
-        //viewModel.fetchNewsList("id")
         viewModel.fetchProfileData { profile ->
             profile.id?.let { id ->
                 viewModel.userId.value = id

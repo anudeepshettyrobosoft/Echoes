@@ -135,8 +135,6 @@ fun UploadArticle(
 
     val launcherGallery =
         rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
-            //mediaUri = uri
-            //selectedImages.addAll(uris)
             viewModel.addImage(uris)
         }
 
